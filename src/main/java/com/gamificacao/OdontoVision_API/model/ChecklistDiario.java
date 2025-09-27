@@ -1,5 +1,6 @@
 package com.gamificacao.OdontoVision_API.model;
 
+import com.gamificacao.OdontoVision_API.model.enums.SimNao;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,8 +15,8 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
-@Table(name = "pontuacao")
-public class Pontuacao {
+@Table(name = "checklist_diario")
+public class ChecklistDiario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,25 +28,24 @@ public class Pontuacao {
 
     @NotNull
     @Column(nullable = false)
-    private Integer pontos;
+    private LocalDate data;
 
-    @NotNull
-    @Column(name = "data_registro", nullable = false)
-    private LocalDate dataRegistro;
+    @Column(length = 1)
+    private SimNao escovacao;
 
-    @Column(name = "ciclo_inicial")
-    private LocalDate cicloInicial;
+    @Column(name = "fio_dental", length = 1)
+    private SimNao fioDental;
 
-    @Column(name = "ciclo_final")
-    private LocalDate cicloFinal;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "consulta_validacao_id")
+    private Consulta consultaValidacao;
 
-    public Pontuacao() {
+    public ChecklistDiario() {
     }
 
-    public Pontuacao(Usuario usuario, Integer pontos, LocalDate dataRegistro) {
+    public ChecklistDiario(Usuario usuario, LocalDate data) {
         this.usuario = usuario;
-        this.pontos = pontos;
-        this.dataRegistro = dataRegistro;
+        this.data = data;
     }
 
     public Long getId() {
@@ -60,42 +60,42 @@ public class Pontuacao {
         this.usuario = usuario;
     }
 
-    public Integer getPontos() {
-        return pontos;
+    public LocalDate getData() {
+        return data;
     }
 
-    public void setPontos(Integer pontos) {
-        this.pontos = pontos;
+    public void setData(LocalDate data) {
+        this.data = data;
     }
 
-    public LocalDate getDataRegistro() {
-        return dataRegistro;
+    public SimNao getEscovacao() {
+        return escovacao;
     }
 
-    public void setDataRegistro(LocalDate dataRegistro) {
-        this.dataRegistro = dataRegistro;
+    public void setEscovacao(SimNao escovacao) {
+        this.escovacao = escovacao;
     }
 
-    public LocalDate getCicloInicial() {
-        return cicloInicial;
+    public SimNao getFioDental() {
+        return fioDental;
     }
 
-    public void setCicloInicial(LocalDate cicloInicial) {
-        this.cicloInicial = cicloInicial;
+    public void setFioDental(SimNao fioDental) {
+        this.fioDental = fioDental;
     }
 
-    public LocalDate getCicloFinal() {
-        return cicloFinal;
+    public Consulta getConsultaValidacao() {
+        return consultaValidacao;
     }
 
-    public void setCicloFinal(LocalDate cicloFinal) {
-        this.cicloFinal = cicloFinal;
+    public void setConsultaValidacao(Consulta consultaValidacao) {
+        this.consultaValidacao = consultaValidacao;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Pontuacao that)) return false;
+        if (!(o instanceof ChecklistDiario that)) return false;
         return Objects.equals(id, that.id);
     }
 
