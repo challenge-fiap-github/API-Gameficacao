@@ -9,12 +9,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
-@Table(name = "usuario_recompensa")
-public class UsuarioRecompensa {
+@Table(name = "usuario_plano")
+public class UsuarioPlano {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,18 +26,19 @@ public class UsuarioRecompensa {
     private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recompensa_id", nullable = false)
-    private Recompensa recompensa;
+    @JoinColumn(name = "plano_id", nullable = false)
+    private PlanoOdontologico plano;
 
-    @Column(name = "data_resgate")
-    private LocalDate dataResgate = LocalDate.now();
+    @NotNull
+    @Column(name = "data_adesao")
+    private LocalDate dataAdesao = LocalDate.now();
 
-    public UsuarioRecompensa() {
+    public UsuarioPlano() {
     }
 
-    public UsuarioRecompensa(Usuario usuario, Recompensa recompensa) {
+    public UsuarioPlano(Usuario usuario, PlanoOdontologico plano) {
         this.usuario = usuario;
-        this.recompensa = recompensa;
+        this.plano = plano;
     }
 
     public Long getId() {
@@ -47,30 +49,30 @@ public class UsuarioRecompensa {
         return usuario;
     }
 
-    public void setUsuario(Usuario usuario) {
+    public void definirUsuario(Usuario usuario) {
         this.usuario = usuario;
     }
 
-    public Recompensa getRecompensa() {
-        return recompensa;
+    public PlanoOdontologico getPlano() {
+        return plano;
     }
 
-    public void setRecompensa(Recompensa recompensa) {
-        this.recompensa = recompensa;
+    public void setPlano(PlanoOdontologico plano) {
+        this.plano = plano;
     }
 
-    public LocalDate getDataResgate() {
-        return dataResgate;
+    public LocalDate getDataAdesao() {
+        return dataAdesao;
     }
 
-    public void setDataResgate(LocalDate dataResgate) {
-        this.dataResgate = dataResgate;
+    public void setDataAdesao(LocalDate dataAdesao) {
+        this.dataAdesao = dataAdesao;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof UsuarioRecompensa that)) return false;
+        if (!(o instanceof UsuarioPlano that)) return false;
         return Objects.equals(id, that.id);
     }
 
