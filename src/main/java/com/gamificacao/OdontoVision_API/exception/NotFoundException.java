@@ -1,4 +1,11 @@
 package com.gamificacao.OdontoVision_API.exception;
 
-public class NotFoundException {
+/**
+ * Exceção para recursos não encontrados.
+ */
+public class NotFoundException extends RuntimeException {
+
+    public NotFoundException(String message) {
+        super(message);
+    }
 }
