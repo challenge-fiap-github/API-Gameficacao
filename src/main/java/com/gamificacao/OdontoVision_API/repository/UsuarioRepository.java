@@ -4,23 +4,15 @@ import com.gamificacao.OdontoVision_API.model.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
 public interface UsuarioRepository extends BaseRepository<Usuario, Long> {
+    boolean existsByEmailOrCpf(String email, String cpf);
+    Optional<Usuario> findByEmail(String email);
 
-    @EntityGraph(attributePaths = "endereco")
-    Page<Usuario> findAllBy(Pageable pageable);
-
-    @Override
-    @EntityGraph(attributePaths = "endereco")
-    Optional<Usuario> findById(Long id);
-
-    boolean existsByEmailIgnoreCase(String email);
-
-    boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
-
-    boolean existsByCpf(String cpf);
-
-    boolean existsByCpfAndIdNot(String cpf, Long id);
+    @EntityGraph(attributePaths = {"endereco"})
+    @Query("select u from Usuario u")
+    Page<Usuario> findAllWithEndereco(Pageable pageable);
 }
