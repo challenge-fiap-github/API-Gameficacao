@@ -8,14 +8,23 @@ import org.springframework.web.bind.annotation.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
-@RequestMapping(value = "/api", produces = "application/json")
+@RequestMapping(produces = "application/json")
 public class RootController {
 
-    @GetMapping
-    public ResponseEntity<RepresentationModel<?>> root() {
+    /** Redireciona raiz para o Swagger UI. */
+    @GetMapping("/")
+    public ResponseEntity<Void> home() {
+        return ResponseEntity.status(302)
+                .header("Location", "/swagger-ui/index.html")
+                .build();
+    }
+
+    /** Índice HATEOAS da API. */
+    @GetMapping("/api")
+    public ResponseEntity<RepresentationModel<?>> apiIndex() {
         var model = new RepresentationModel<>();
 
-        model.add(linkTo(methodOn(RootController.class).root()).withSelfRel());
+        model.add(linkTo(methodOn(RootController.class).apiIndex()).withSelfRel());
 
         // UsuarioController.listar(Pageable pageable, String query)
         model.add(linkTo(methodOn(UsuarioController.class)
