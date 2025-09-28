@@ -33,6 +33,7 @@ public class RecompensaService {
     public RecompensaDTO atualizar(Long id, UpdateRecompensaDTO dto) {
         Recompensa entity = recompensaRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Recompensa não encontrada"));
+        // aplica somente campos não nulos
         recompensaMapper.updateEntityFromDto(dto, entity);
         return recompensaMapper.toDTO(recompensaRepository.save(entity));
     }
@@ -50,7 +51,8 @@ public class RecompensaService {
     }
 
     public Page<RecompensaDTO> listarComEstoque(Pageable pageable) {
-        return recompensaRepository.findByQuantidadeDisponivelGreaterThan(0, pageable)
+        return recompensaRepository
+                .findByQuantidadeDisponivelGreaterThan(0, pageable)
                 .map(recompensaMapper::toDTO);
     }
 }

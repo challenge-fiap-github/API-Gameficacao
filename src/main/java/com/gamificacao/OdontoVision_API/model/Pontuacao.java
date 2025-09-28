@@ -12,7 +12,6 @@ public class Pontuacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // FK: usuario_id
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
@@ -29,7 +28,23 @@ public class Pontuacao {
     @Column(name = "ciclo_final")
     private LocalDate cicloFinal;
 
-    public Pontuacao() {}
+    public Pontuacao() {
+    }
+
+    // --- Builder manual simples (opcional) ---
+    public static Builder builder() {
+        return new Builder();
+    }
+    public static class Builder {
+        private final Pontuacao p = new Pontuacao();
+        public Builder usuario(Usuario u) { p.usuario = u; return this; }
+        public Builder pontos(Integer v) { p.pontos = v; return this; }
+        public Builder dataRegistro(LocalDate d) { p.dataRegistro = d; return this; }
+        public Builder cicloInicial(LocalDate d) { p.cicloInicial = d; return this; }
+        public Builder cicloFinal(LocalDate d) { p.cicloFinal = d; return this; }
+        public Pontuacao build() { return p; }
+    }
+    // -----------------------------------------
 
     public Long getId() { return id; }
 
@@ -48,7 +63,6 @@ public class Pontuacao {
     public LocalDate getCicloFinal() { return cicloFinal; }
     public void setCicloFinal(LocalDate cicloFinal) { this.cicloFinal = cicloFinal; }
 
-    /** Conveniência para manter a relação bidirecional coerente. */
     public void definirUsuario(Usuario u) {
         this.usuario = u;
         if (u != null) u.getPontuacoes().add(this);

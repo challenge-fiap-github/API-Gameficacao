@@ -27,7 +27,7 @@ public class UsuarioService {
             throw new ConflictException("E-mail ou CPF já cadastrado");
         }
         Usuario entity = usuarioMapper.toEntity(dto);
-        // TODO: se for usar segurança depois: entity.setSenha(passwordEncoder.encode(dto.senha()));
+        // se usar segurança depois, encode a senha aqui
         Usuario salvo = usuarioRepository.save(entity);
         return usuarioMapper.toDTO(salvo);
     }
@@ -36,14 +36,24 @@ public class UsuarioService {
     public UsuarioDTO atualizar(Long id, UpdateUsuarioDTO dto) {
         Usuario entity = usuarioRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
-        // se e-mail/cpf forem alterados, garantir unicidade
-        if (dto.email() != null || dto.cpf() != null) {
-            boolean conflito = usuarioRepository.existsByEmailOrCpf(
-                    dto.email() != null ? dto.email() : entity.getEmail(),
-                    dto.cpf() != null ? dto.cpf() : entity.getCpf()
-            ) && !(entity.getEmail().equals(dto.email()) || entity.getCpf().equals(dto.cpf()));
-            if (conflito) throw new ConflictException("E-mail ou CPF já cadastrado");
+
+        // detecta se houve alteração de email/cpf
+        boolean sameEmail = (dto.email() == null) || dto.email().equals(entity.getEmail());
+        boolean sameCpf   = (dto.cpf()   == null) || dto.cpf().equals(entity.getCpf());
+        boolean changed   = !(sameEmail && sameCpf);
+
+        if (changed) {
+            String emailParaChecar = dto.email() != null ? dto.email() : entity.getEmail();
+            String cpfParaChecar   = dto.cpf()   != null ? dto.cpf()   : entity.getCpf();
+            boolean existeOutro = usuarioRepository.existsByEmailOrCpf(emailParaChecar, cpfParaChecar)
+                    // se o repo não desconsidera o próprio registro, faça uma verificação simples:
+                    && (!emailParaChecar.equals(entity.getEmail()) || !cpfParaChecar.equals(entity.getCpf()));
+            if (existeOutro) {
+                throw new ConflictException("E-mail ou CPF já cadastrado");
+            }
         }
+
+        // aplica somente campos não nulos
         usuarioMapper.updateEntityFromDto(dto, entity);
         Usuario salvo = usuarioRepository.save(entity);
         return usuarioMapper.toDTO(salvo);
@@ -56,6 +66,7 @@ public class UsuarioService {
     }
 
     public Page<UsuarioDTO> listar(Pageable pageable) {
+        // use o método que você tiver no repositório (pode ser findAll(pageable))
         return usuarioRepository.findAllWithEndereco(pageable).map(usuarioMapper::toDTO);
     }
 }
