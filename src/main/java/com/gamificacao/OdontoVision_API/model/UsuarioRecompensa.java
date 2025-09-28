@@ -1,14 +1,6 @@
 package com.gamificacao.OdontoVision_API.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -20,52 +12,31 @@ public class UsuarioRecompensa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // FK: usuario_id
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // FK: recompensa_id
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "recompensa_id", nullable = false)
     private Recompensa recompensa;
 
     @Column(name = "data_resgate")
-    private LocalDate dataResgate = LocalDate.now();
+    private LocalDate dataResgate;
 
-    public UsuarioRecompensa() {
-    }
+    public UsuarioRecompensa() {}
 
-    public UsuarioRecompensa(Usuario usuario, Recompensa recompensa) {
-        this.usuario = usuario;
-        this.recompensa = recompensa;
-    }
+    public Long getId() { return id; }
 
-    public Long getId() {
-        return id;
-    }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
+    public Recompensa getRecompensa() { return recompensa; }
+    public void setRecompensa(Recompensa recompensa) { this.recompensa = recompensa; }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    public Recompensa getRecompensa() {
-        return recompensa;
-    }
-
-    public void setRecompensa(Recompensa recompensa) {
-        this.recompensa = recompensa;
-    }
-
-    public LocalDate getDataResgate() {
-        return dataResgate;
-    }
-
-    public void setDataResgate(LocalDate dataResgate) {
-        this.dataResgate = dataResgate;
-    }
+    public LocalDate getDataResgate() { return dataResgate; }
+    public void setDataResgate(LocalDate dataResgate) { this.dataResgate = dataResgate; }
 
     @Override
     public boolean equals(Object o) {
@@ -73,9 +44,6 @@ public class UsuarioRecompensa {
         if (!(o instanceof UsuarioRecompensa that)) return false;
         return Objects.equals(id, that.id);
     }
-
     @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
+    public int hashCode() { return Objects.hash(id); }
 }

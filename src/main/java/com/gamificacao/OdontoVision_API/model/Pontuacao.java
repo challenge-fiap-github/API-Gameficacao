@@ -1,15 +1,6 @@
 package com.gamificacao.OdontoVision_API.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -21,15 +12,14 @@ public class Pontuacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // FK: usuario_id
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @NotNull
     @Column(nullable = false)
     private Integer pontos;
 
-    @NotNull
     @Column(name = "data_registro", nullable = false)
     private LocalDate dataRegistro;
 
@@ -39,57 +29,29 @@ public class Pontuacao {
     @Column(name = "ciclo_final")
     private LocalDate cicloFinal;
 
-    public Pontuacao() {
-    }
+    public Pontuacao() {}
 
-    public Pontuacao(Usuario usuario, Integer pontos, LocalDate dataRegistro) {
-        this.usuario = usuario;
-        this.pontos = pontos;
-        this.dataRegistro = dataRegistro;
-    }
+    public Long getId() { return id; }
 
-    public Long getId() {
-        return id;
-    }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
+    public Integer getPontos() { return pontos; }
+    public void setPontos(Integer pontos) { this.pontos = pontos; }
 
-    public void definirUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
+    public LocalDate getDataRegistro() { return dataRegistro; }
+    public void setDataRegistro(LocalDate dataRegistro) { this.dataRegistro = dataRegistro; }
 
-    public Integer getPontos() {
-        return pontos;
-    }
+    public LocalDate getCicloInicial() { return cicloInicial; }
+    public void setCicloInicial(LocalDate cicloInicial) { this.cicloInicial = cicloInicial; }
 
-    public void setPontos(Integer pontos) {
-        this.pontos = pontos;
-    }
+    public LocalDate getCicloFinal() { return cicloFinal; }
+    public void setCicloFinal(LocalDate cicloFinal) { this.cicloFinal = cicloFinal; }
 
-    public LocalDate getDataRegistro() {
-        return dataRegistro;
-    }
-
-    public void setDataRegistro(LocalDate dataRegistro) {
-        this.dataRegistro = dataRegistro;
-    }
-
-    public LocalDate getCicloInicial() {
-        return cicloInicial;
-    }
-
-    public void setCicloInicial(LocalDate cicloInicial) {
-        this.cicloInicial = cicloInicial;
-    }
-
-    public LocalDate getCicloFinal() {
-        return cicloFinal;
-    }
-
-    public void setCicloFinal(LocalDate cicloFinal) {
-        this.cicloFinal = cicloFinal;
+    /** Conveniência para manter a relação bidirecional coerente. */
+    public void definirUsuario(Usuario u) {
+        this.usuario = u;
+        if (u != null) u.getPontuacoes().add(this);
     }
 
     @Override
@@ -98,9 +60,6 @@ public class Pontuacao {
         if (!(o instanceof Pontuacao that)) return false;
         return Objects.equals(id, that.id);
     }
-
     @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
+    public int hashCode() { return Objects.hash(id); }
 }

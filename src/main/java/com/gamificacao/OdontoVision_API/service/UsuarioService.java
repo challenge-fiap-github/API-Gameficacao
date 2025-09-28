@@ -3,90 +3,59 @@ package com.gamificacao.OdontoVision_API.service;
 import com.gamificacao.OdontoVision_API.dto.usuario.CreateUsuarioDTO;
 import com.gamificacao.OdontoVision_API.dto.usuario.UpdateUsuarioDTO;
 import com.gamificacao.OdontoVision_API.dto.usuario.UsuarioDTO;
-import com.gamificacao.OdontoVision_API.exception.BusinessException;
+import com.gamificacao.OdontoVision_API.exception.ConflictException;
 import com.gamificacao.OdontoVision_API.exception.NotFoundException;
 import com.gamificacao.OdontoVision_API.mapper.UsuarioMapper;
 import com.gamificacao.OdontoVision_API.model.Usuario;
 import com.gamificacao.OdontoVision_API.repository.UsuarioRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper) {
-        this.usuarioRepository = usuarioRepository;
-        this.usuarioMapper = usuarioMapper;
-    }
-
-    @Transactional(readOnly = true)
-    public Page<UsuarioDTO> listar(Pageable pageable) {
-        return usuarioRepository.findAllBy(pageable)
-                .map(usuarioMapper::toDTO);
-    }
-
-    @Transactional(readOnly = true)
-    public UsuarioDTO buscar(Long id) {
-        return usuarioMapper.toDTO(buscarEntidade(id));
-    }
-
     @Transactional
     public UsuarioDTO criar(CreateUsuarioDTO dto) {
-        validarEmail(dto.email());
-        validarCpf(dto.cpf());
-
-        Usuario usuario = usuarioMapper.toEntity(dto);
-        usuarioRepository.save(usuario);
-        return usuarioMapper.toDTO(usuario);
+        if (usuarioRepository.existsByEmailOrCpf(dto.email(), dto.cpf())) {
+            throw new ConflictException("E-mail ou CPF já cadastrado");
+        }
+        Usuario entity = usuarioMapper.toEntity(dto);
+        // TODO: se for usar segurança depois: entity.setSenha(passwordEncoder.encode(dto.senha()));
+        Usuario salvo = usuarioRepository.save(entity);
+        return usuarioMapper.toDTO(salvo);
     }
 
     @Transactional
     public UsuarioDTO atualizar(Long id, UpdateUsuarioDTO dto) {
-        Usuario usuario = buscarEntidade(id);
-        validarEmailAtualizacao(id, dto.email());
-        validarCpfAtualizacao(id, dto.cpf());
-
-        usuarioMapper.copy(dto, usuario);
-        return usuarioMapper.toDTO(usuario);
+        Usuario entity = usuarioRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
+        // se e-mail/cpf forem alterados, garantir unicidade
+        if (dto.email() != null || dto.cpf() != null) {
+            boolean conflito = usuarioRepository.existsByEmailOrCpf(
+                    dto.email() != null ? dto.email() : entity.getEmail(),
+                    dto.cpf() != null ? dto.cpf() : entity.getCpf()
+            ) && !(entity.getEmail().equals(dto.email()) || entity.getCpf().equals(dto.cpf()));
+            if (conflito) throw new ConflictException("E-mail ou CPF já cadastrado");
+        }
+        usuarioMapper.updateEntityFromDto(dto, entity);
+        Usuario salvo = usuarioRepository.save(entity);
+        return usuarioMapper.toDTO(salvo);
     }
 
-    @Transactional
-    public void excluir(Long id) {
-        Usuario usuario = buscarEntidade(id);
-        usuarioRepository.delete(usuario);
-    }
-
-    private Usuario buscarEntidade(Long id) {
+    public UsuarioDTO buscarPorId(Long id) {
         return usuarioRepository.findById(id)
+                .map(usuarioMapper::toDTO)
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
     }
 
-    private void validarEmail(String email) {
-        if (usuarioRepository.existsByEmailIgnoreCase(email)) {
-            throw new BusinessException("email já cadastrado");
-        }
-    }
-
-    private void validarEmailAtualizacao(Long id, String email) {
-        if (usuarioRepository.existsByEmailIgnoreCaseAndIdNot(email, id)) {
-            throw new BusinessException("email já cadastrado");
-        }
-    }
-
-    private void validarCpf(String cpf) {
-        if (usuarioRepository.existsByCpf(cpf)) {
-            throw new BusinessException("cpf já cadastrado");
-        }
-    }
-
-    private void validarCpfAtualizacao(Long id, String cpf) {
-        if (usuarioRepository.existsByCpfAndIdNot(cpf, id)) {
-            throw new BusinessException("cpf já cadastrado");
-        }
+    public Page<UsuarioDTO> listar(Pageable pageable) {
+        return usuarioRepository.findAllWithEndereco(pageable).map(usuarioMapper::toDTO);
     }
 }
