@@ -1,4 +1,8 @@
 package com.gamificacao.OdontoVision_API.dto.gamificacao;
 
-public class LeaderboardItemDTO {
-}
+/** Item do ranking (leaderboard). */
+public record LeaderboardItemDTO(
+        Long usuarioId,
+        String nome,
+        Integer total
+) {}
