@@ -1,7 +1,10 @@
 package com.gamificacao.OdontoVision_API.exception;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,6 +16,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Hidden                     // ⬅️ oculta este advice da documentação OpenAPI
+@Order(Ordered.HIGHEST_PRECEDENCE)   // ⬅️ garante que este handler seja aplicado primeiro
 @RestControllerAdvice
 public class RestExceptionHandler {
 
@@ -44,7 +49,7 @@ public class RestExceptionHandler {
     public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest request) {
         List<String> details = ex.getConstraintViolations()
                 .stream()
-                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .map(v -> v.getPropertyPath() + ": " + v.getMessage())
                 .collect(Collectors.toList());
         return buildResponse(ex, HttpStatus.BAD_REQUEST, request, details);
     }
@@ -64,7 +69,8 @@ public class RestExceptionHandler {
     }
 
     private ResponseEntity<ApiError> buildResponse(Exception ex, HttpStatus status, HttpServletRequest request, List<String> details) {
-        ApiError error = new ApiError(status, ex.getMessage(), request.getRequestURI(), details);
-        return ResponseEntity.status(status).body(error);
+        String path = (request != null) ? request.getRequestURI() : "";
+        ApiError body = new ApiError(status, ex.getMessage(), path, details);
+        return ResponseEntity.status(status).body(body);
     }
 }
